@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
-import orderBy from "lodash";
+import orderBy from "lodash/orderby";
 import { useFetchResource } from "./../composables/useFetchResource.js";
 
 const { fetchResource } = useFetchResource();
@@ -12,12 +12,17 @@ const loadingCharacters = ref(null);
 const locationsUrl = "https://rickandmortyapi.com/api/location";
 const charactersUrl = "https://rickandmortyapi.com/api/character";
 
-const orderKey = ref("id");
+const orderKeyCharacters = ref("id");
+const orderKeyLocations = ref("id");
 
-const setOrderKey = (key) => (orderKey.value = key);
+const setOrderKeyChars = (key) => (orderKeyCharacters.value = key);
+const setOrderKeyLoc = (key) => (orderKeyLocations.value = key);
 
 const charactersOrdered = computed(() =>
-  orderBy(characters.value, orderKey.value)
+  orderBy(characters.value, orderKeyCharacters.value)
+);
+const locationsOrdered = computed(() =>
+  orderBy(locations.value, orderKeyLocations.value)
 );
 
 fetchResource(locationsUrl, loadingLocations, locations);
@@ -27,11 +32,13 @@ fetchResource(charactersUrl, loadingCharacters, characters);
 <template>
   <div>
     <div class="border-b-2 pb-4 border-gray-300 text-center">
-      Order by
-      <button class="btn bg-blue-500 mr-4" @click="setOrderKey('name')">
+      Order Characters by
+      <button class="btn bg-blue-500 mr-4" @click="setOrderKeyChars('name')">
         Name
       </button>
-      <button class="btn bg-orange-500" @click="setOrderKey('id')">Id</button>
+      <button class="btn bg-orange-500" @click="setOrderKeyChars('id')">
+        Id
+      </button>
     </div>
     <div class="m-auto container flex flex-wrap mt-10">
       <div
@@ -60,15 +67,17 @@ fetchResource(charactersUrl, loadingCharacters, characters);
     </div>
 
     <div class="border-b-2 pb-4 border-gray-300 text-center">
-      Order by
-      <button class="btn bg-blue-500 mr-4" @click="setOrderKey('name')">
+      Order Locations by
+      <button class="btn bg-blue-500 mr-4" @click="setOrderKeyLoc('name')">
         Name
       </button>
-      <button class="btn bg-orange-500" @click="setOrderKey('id')">Id</button>
+      <button class="btn bg-orange-500" @click="setOrderKeyLoc('id')">
+        Id
+      </button>
     </div>
     <div class="m-auto container flex flex-wrap mt-10">
       <div
-        v-for="location in locations"
+        v-for="location in locationsOrdered"
         :key="location.id"
         class="xl:w-1/5 lg:w-1/4 md:w-1/3 w-1/2 card"
       >

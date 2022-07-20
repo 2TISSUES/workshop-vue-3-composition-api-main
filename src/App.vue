@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <HelloWorld msg="Rick & Morty Characters" />
+    <HelloWorld msg="Rick & Morty Characters and Locations" />
   </div>
 </template>
 
