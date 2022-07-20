@@ -2,43 +2,41 @@
 import { ref, computed } from "vue";
 import orderBy from "lodash/orderby";
 import { useFetchResource } from "./../composables/useFetchResource.js";
+import { useGlobalEvent } from "./../composables/useGlobalEvent.js";
 
-const { fetchResource } = useFetchResource();
+const orderKey = ref("id");
 
-const locations = ref([]);
-const characters = ref([]);
-const loadingLocations = ref(null);
-const loadingCharacters = ref(null);
-const locationsUrl = "https://rickandmortyapi.com/api/location";
-const charactersUrl = "https://rickandmortyapi.com/api/character";
+const setOrderKey = (key) => (orderKey.value = key);
 
-const orderKeyCharacters = ref("id");
-const orderKeyLocations = ref("id");
+const {
+  data: characters,
+  loadingState,
+  fetchResource: fetchAllCharacters,
+} = useFetchResource("https://rickandmortyapi.com/api/character");
+fetchAllCharacters();
 
-const setOrderKeyChars = (key) => (orderKeyCharacters.value = key);
-const setOrderKeyLoc = (key) => (orderKeyLocations.value = key);
+const {
+  data: locations,
+  loadingState: loadingLocations,
+  fetchResource: fetchLocations,
+} = useFetchResource("https://rickandmortyapi.com/api/location");
+fetchLocations();
 
 const charactersOrdered = computed(() =>
-  orderBy(characters.value, orderKeyCharacters.value)
-);
-const locationsOrdered = computed(() =>
-  orderBy(locations.value, orderKeyLocations.value)
+  orderBy(characters.value, orderKey.value)
 );
 
-fetchResource(locationsUrl, loadingLocations, locations);
-fetchResource(charactersUrl, loadingCharacters, characters);
+useGlobalEvent("keypress", () => characters.value.pop());
 </script>
 
 <template>
   <div>
     <div class="border-b-2 pb-4 border-gray-300 text-center">
       Order Characters by
-      <button class="btn bg-blue-500 mr-4" @click="setOrderKeyChars('name')">
+      <button class="btn bg-blue-500 mr-4" @click="setOrderKey('name')">
         Name
       </button>
-      <button class="btn bg-orange-500" @click="setOrderKeyChars('id')">
-        Id
-      </button>
+      <button class="btn bg-orange-500" @click="setOrderKey('id')">Id</button>
     </div>
     <div class="m-auto container flex flex-wrap mt-10">
       <div
@@ -66,37 +64,31 @@ fetchResource(charactersUrl, loadingCharacters, characters);
       </div>
     </div>
 
-    <div class="border-b-2 pb-4 border-gray-300 text-center">
-      Order Locations by
-      <button class="btn bg-blue-500 mr-4" @click="setOrderKeyLoc('name')">
-        Name
-      </button>
-      <button class="btn bg-orange-500" @click="setOrderKeyLoc('id')">
-        Id
-      </button>
+    <div>
+      <h1 class="text-2xl">Locations</h1>
+      <table class="table-fixed w-full text-left">
+        <thead class="bg-gray-500">
+          <tr>
+            <th class="font-bold p-2">Name</th>
+            <th class="font-bold">Type</th>
+            <th class="font-bold">Dimension</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="location in locations" :key="location.id">
+            <td>{{ location.name }}</td>
+            <td>{{ location.type }}</td>
+            <td>{{ location.dimension }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="m-auto container flex flex-wrap mt-10">
-      <div
-        v-for="location in locationsOrdered"
-        :key="location.id"
-        class="xl:w-1/5 lg:w-1/4 md:w-1/3 w-1/2 card"
-      >
-        <div class="card-inner">
-          <div class="content text-center mt-5">
-            <span class="header text-xl">{{ location.name }}</span>
-            <div class="text-center text-gray-500 text-sm">
-              <div class="">Status: {{ location.type }}</div>
-              <div>{{ location.dimension }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <div
-      v-if="loadingCharacters && loadingLocations === 'loading'"
+      v-if="loadingState === 'loading' || loadingLocations === 'loading'"
       class="loading"
     >
-      <span class="text-gray-500">Loading resource...</span>
+      <span class="text-gray-500">Loading resources...</span>
       <img src="/spinner.svg" alt="loading" />
     </div>
   </div>

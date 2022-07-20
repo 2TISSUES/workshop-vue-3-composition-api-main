@@ -1,15 +1,16 @@
+import { ref } from "vue";
 import axios from "axios";
-
-export const useFetchResource = () => {
-  const fetchResource = (resource, loadingState, store) => {
+export function useFetchResource(url) {
+  const data = ref([]);
+  const loadingState = ref(null);
+  function fetchResource() {
     loadingState.value = "loading";
-    axios.get(`${resource}`).then((response) => {
+    axios.get(url).then((response) => {
       setTimeout(() => {
         loadingState.value = "success";
-        store.value = response.data.results;
+        data.value = response.data.results;
       }, 1000);
     });
-  };
-
-  return { fetchResource };
-};
+  }
+  return { data, loadingState, fetchResource };
+}
